@@ -93,7 +93,18 @@ def update_handler(name):
 @delete('/names/<name>')
 def delete_handler(name):
     '''Handles name deletions'''
-    pass
+    try:
+        _names = cassandra_connect.list_names()
+        if name not in _names:
+            raise KeyError
+
+    except KeyError:
+        response.status = 404
+        return
+
+    # remove stuff
+    cassandra_connect.remove_name(name)
+    return
 
 
 app = application = bottle.default_app()
