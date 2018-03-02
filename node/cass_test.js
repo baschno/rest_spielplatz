@@ -9,7 +9,7 @@ client.connect(function(err, result) {
     } else
         console.log('Connected...');
 })
-console.log(client)
+console.log(client);
 
 console.log('VorExecute');
 client.execute("SELECT mykey, name FROM mytable", function (err, result) {
