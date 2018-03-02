@@ -8,6 +8,7 @@ var cassandra = require('cassandra-driver');
 
 var index = require('./routes/index');
 var user_info = require('./routes/user');
+var health_check = require('./routes/health');
 
 var app = express();
 
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/user', user_info);
+app.use('/health', health_check);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
