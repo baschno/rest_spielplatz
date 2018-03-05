@@ -1,3 +1,6 @@
 python/venv/
+venv/
 .idea/
 node/node_modules
+*.pyc
+
