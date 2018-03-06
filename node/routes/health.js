@@ -28,7 +28,7 @@ router.get("/", function(req, res, next) {
     console.log(casinfo);
     
     res.setHeader('Content-Type', 'application/json');
-    res.json(casinfo);
+    res.json({Result: 'OK', content: casinfo});
 });
 
 module.exports = router;
