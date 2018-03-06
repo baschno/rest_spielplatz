@@ -13,11 +13,22 @@ const query = "SELECT * from system.hints";
 router.get("/", function(req, res, next) {
     client
     .execute(query)
-    .then(result => console.log("Result %s", result.rows[0].name));
+    .then(result => console.log("Result %s", result.rows[0]));
 
-    console.log(client.hosts);
+    var casinfo = {};
+    client.hosts.forEach(element => {
+        let casinfo_item = {
+            version: element.cassandraVersion,
+            rack: element.rack,
+            datacenter: element.datacenter
+        }
+        casinfo[element.address] = casinfo_item;
+    });
+
+    console.log(casinfo);
+    
     res.setHeader('Content-Type', 'application/json');
-    res.send({result: 'OK', hosts: [client.hosts]});
+    res.json(casinfo);
 });
 
 module.exports = router;

@@ -4,3 +4,4 @@ venv/
 node/node_modules
 *.pyc
 
+npm-debug.log
