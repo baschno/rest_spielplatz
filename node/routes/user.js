@@ -12,10 +12,7 @@ router.get('/:id', function(req, res, next) {
     if (err) {
       res.status(404).send({msg: err});
     } else {
-      res.render('user', {
-        key: result.rows[0].mykey,
-        name: result.rows[0].name
-      })
+      res.json(result.rows[0]);
     }
   })
 });

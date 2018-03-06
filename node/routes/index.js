@@ -16,10 +16,7 @@ router.get('/', function(req, res, next) {
     if (err) {
       res.status(404).send({msg: err});
     } else {
-      res.render('index', {
-        title: 'Cassandra Connection',
-        users: result.rows
-      })
+      res.json(result.rows)
     }
   })
 });
