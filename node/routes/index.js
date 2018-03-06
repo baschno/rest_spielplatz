@@ -1,8 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var cassandra = require('cassandra-driver');
+var config = require('../config');
 
-var client = new cassandra.Client({contactPoints: ['127.0.0.1']});
+var client = new cassandra.Client({
+  contactPoints: [ config.cassandra_seednodes ]
+});
 
 const query = "SELECT * from mykeyspace.mytable";
 client.execute(query).then(result => console.log('Result %s', result.rows[0].name));

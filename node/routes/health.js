@@ -1,8 +1,11 @@
 var express = require("express");
 var router = express.Router();
 var cassandra = require("cassandra-driver");
+var config = require("../config");
 
-var client = new cassandra.Client({ contactPoints: ["0.0.0.0"] });
+var client = new cassandra.Client({
+  contactPoints: [config.cassandra_seednodes]
+});
 
 const query = "SELECT * from system.hints";
 
