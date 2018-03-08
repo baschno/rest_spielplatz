@@ -3,9 +3,45 @@ var router = express.Router();
 var cassandra = require("cassandra-driver");
 var config = require("../config");
 
-var client = new cassandra.Client({
-  contactPoints: [config.cassandra_seednodes]
+var node_list = ["0.0.0.0", "172.18.0.2", "172.18.0.3", "172.18.0.4"];
+var succ_list = [];
+var err_list = [];
+
+node_list.forEach(element => {
+    console.log("Working on " + element);
+    var client = new cassandra.Client({
+      contactPoints: [element]
+    });
+    client.connect().then(function(element) {
+        console.log("connected - " + element);
+    })
+    .catch(function(err) {
+        console.log("Not connected. " + err)
+    })
 });
+
+function http(url, method) {
+    var promise = new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            var data;
+            if (data) {
+                resolve(data);
+            } else {
+                reject('No data');
+            }
+        }, 1000);
+    });
+
+    return promise;
+}
+
+http('http://www.google.de', 'GET')
+    .then(function(data) {
+        console.log(data);
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
 
 const query = "SELECT * from system.hints";
 
