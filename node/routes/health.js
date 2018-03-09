@@ -12,15 +12,19 @@ node_list.forEach(element => {
     var client = new cassandra.Client({
       contactPoints: [element]
     });
-    client.connect().then(function(element) {
-        console.log("connected - " + element);
+    client.connect().then(function(x) {
+        console.log("connected to " + element);
+        return element;
+    })
+    .then(function (data){
+        client.shutdown();
     })
     .catch(function(err) {
         console.log("Not connected. " + err)
     })
 });
 
-function http(url, method) {
+function checkHost(url, method) {
     var promise = new Promise(function(resolve, reject) {
         setTimeout(function() {
             var data;
@@ -35,7 +39,7 @@ function http(url, method) {
     return promise;
 }
 
-http('http://www.google.de', 'GET')
+checkHost('http://www.google.de', 'GET')
     .then(function(data) {
         console.log(data);
     })
