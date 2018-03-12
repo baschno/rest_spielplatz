@@ -1,51 +1,65 @@
-var express = require("express");
-var router = express.Router();
-var cassandra = require("cassandra-driver");
-var config = require("../config");
+const express = require("express");
+const router = express.Router();
+const cassandra = require("cassandra-driver");
+const config = require("../config");
 
-var node_list = ["0.0.0.0", "172.18.0.2", "172.18.0.3", "172.18.0.4"];
-var succ_list = [];
-var err_list = [];
+const node_list = ["0.0.0.0", "172.18.0.2", "172.18.0.3", "172.18.0.4"];
+const succ_list = [];
+const err_list = [];
+const promises = [];
 
-node_list.forEach(element => {
-    console.log("Working on " + element);
-    var client = new cassandra.Client({
-      contactPoints: [element]
+function checkHost(ip) {
+  let promise = new Promise(function(resolve, reject) {
+    let client = new cassandra.Client({
+      contactPoints: [ip]
     });
-    client.connect().then(function(x) {
-        console.log("connected to " + element);
-        return element;
-    })
-    .then(function (data){
-        client.shutdown();
-    })
-    .catch(function(err) {
-        console.log("Not connected. " + err)
-    })
-});
 
-function checkHost(url, method) {
-    var promise = new Promise(function(resolve, reject) {
-        setTimeout(function() {
-            var data;
-            if (data) {
-                resolve(data);
-            } else {
-                reject('No data');
+    client
+      .connect()
+      .then(function(x) {
+        console.log("connected nicely to " + ip);
+        return ip;
+      })
+      .then(function(data) {
+          console.log("Shutting down connection.")
+          client.shutdown();
+          resolve(ip);
+      })
+      .catch(function(err) {
+            if (err instanceof cassandra.errors.NoHostAvailableError) {
+              console.log("Host not reachable.");
             }
-        }, 1000);
-    });
+            console.log("Rejecting " + ip + " now");
+            reject(err);
+            }
+        );
+  });
 
-    return promise;
+  return promise;
 }
 
-checkHost('http://www.google.de', 'GET')
-    .then(function(data) {
-        console.log(data);
-    })
-    .catch(function(err) {
-        console.log(err);
-    });
+node_list.forEach(ip => {
+    promises.push(
+        checkHost(ip)
+    );
+});
+
+Promise.all(promises)
+  .then(function(x) {
+    console.log("fine.");
+  })
+  .catch(function(err) {
+    console.log("Er: " + err);
+  });
+
+//checkHost(node_list[0]);
+
+// promises = [checkHost("0.0.0.0"), checkHost("172.18.0.4")];
+// Promise.all(promises).then(function(x) {
+//     console.log("fine.");
+// }).catch(function(err){
+//     console.log("Error: " + err);
+// })
 
 const query = "SELECT * from system.hints";
 
