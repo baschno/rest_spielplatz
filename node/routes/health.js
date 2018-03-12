@@ -4,9 +4,11 @@ const cassandra = require("cassandra-driver");
 const config = require("../config");
 
 const node_list = ["0.0.0.0", "172.18.0.2", "172.18.0.3", "172.18.0.4"];
-const succ_list = [];
-const err_list = [];
 const promises = [];
+
+resultDict = {};
+resultDict["success"] = [];
+resultDict["failed"] = [];
 
 function checkHost(ip) {
   let promise = new Promise(function(resolve, reject) {
@@ -23,6 +25,7 @@ function checkHost(ip) {
       .then(function(data) {
           console.log("Shutting down connection.")
           client.shutdown();
+          resultDict["success"].push(ip);
           resolve(ip);
       })
       .catch(function(err) {
@@ -30,6 +33,7 @@ function checkHost(ip) {
               console.log("Host not reachable.");
             }
             console.log("Rejecting " + ip + " now");
+            resultDict["failed"].push(ip); 
             reject(err);
             }
         );
@@ -44,13 +48,24 @@ node_list.forEach(ip => {
     );
 });
 
+
+
+
+
 Promise.all(promises)
   .then(function(x) {
     console.log("fine.");
+    console.log(JSON.stringify(resultDict["success"]));
+    console.log(JSON.stringify(resultDict["failed"]));
   })
   .catch(function(err) {
     console.log("Er: " + err);
   });
+
+
+
+
+console.log(JSON.stringify(node_list));
 
 //checkHost(node_list[0]);
 
