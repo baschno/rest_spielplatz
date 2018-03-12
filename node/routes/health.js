@@ -4,100 +4,58 @@ const cassandra = require("cassandra-driver");
 const config = require("../config");
 
 const node_list = ["0.0.0.0", "172.18.0.2", "172.18.0.3", "172.18.0.4"];
-const promises = [];
-
-resultDict = {};
-resultDict["success"] = [];
-resultDict["failed"] = [];
 
 function checkHost(ip) {
-  let promise = new Promise(function(resolve, reject) {
-    let client = new cassandra.Client({
-      contactPoints: [ip]
+    let promise = new Promise(function (resolve, reject) {
+        let client = new cassandra.Client({
+            contactPoints: [ip]
+        });
+
+        client
+            .connect()
+            .then(function (x) {
+                console.log("connected to " + ip);
+                return ip;
+            })
+            .then(function (data) {
+                client.shutdown();
+                resolve({ ip: ip, ok: true});
+            })
+            .catch(function (err) {
+                if (err instanceof cassandra.errors.NoHostAvailableError) {
+                    console.log("Host not reachable.");
+                }
+                console.log(ip + " down");
+                resolve({ ip: ip, ok: false });
+            }
+            );
     });
 
-    client
-      .connect()
-      .then(function(x) {
-        console.log("connected nicely to " + ip);
-        return ip;
-      })
-      .then(function(data) {
-          console.log("Shutting down connection.")
-          client.shutdown();
-          resultDict["success"].push(ip);
-          resolve(ip);
-      })
-      .catch(function(err) {
-            if (err instanceof cassandra.errors.NoHostAvailableError) {
-              console.log("Host not reachable.");
-            }
-            console.log("Rejecting " + ip + " now");
-            resultDict["failed"].push(ip); 
-            reject(err);
-            }
-        );
-  });
-
-  return promise;
+    return promise;
 }
 
-node_list.forEach(ip => {
-    promises.push(
-        checkHost(ip)
-    );
-});
-
-
-
-
-
-Promise.all(promises)
-  .then(function(x) {
-    console.log("fine.");
-    console.log(JSON.stringify(resultDict["success"]));
-    console.log(JSON.stringify(resultDict["failed"]));
-  })
-  .catch(function(err) {
-    console.log("Er: " + err);
-  });
-
-
-
-
-console.log(JSON.stringify(node_list));
-
-//checkHost(node_list[0]);
-
-// promises = [checkHost("0.0.0.0"), checkHost("172.18.0.4")];
-// Promise.all(promises).then(function(x) {
-//     console.log("fine.");
-// }).catch(function(err){
-//     console.log("Error: " + err);
-// })
-
-const query = "SELECT * from system.hints";
-
 /* GET home page. */
-router.get("/", function(req, res, next) {
-    client
-    .execute(query)
-    .then(result => console.log("Result %s", result.rows[0]));
+router.get("/", function (req, res, next) {
 
-    var casinfo = {};
-    client.hosts.forEach(element => {
-        let casinfo_item = {
-            version: element.cassandraVersion,
-            rack: element.rack,
-            datacenter: element.datacenter
-        }
-        casinfo[element.address] = casinfo_item;
-    });
-
-    console.log(casinfo);
-    
-    res.setHeader('Content-Type', 'application/json');
-    res.json({Result: 'OK', content: casinfo});
+    Promise.all(node_list.map(node => checkHost(node)))
+        .then(function (x) {
+            console.log("fine.");
+            res.setHeader('Content-Type', 'application/json');
+            const result = x.reduce((acc, curr) => {
+                if(curr.ok) {
+                    acc.succeededHosts.push(curr.ip);
+                } else {
+                    acc.failedHosts.push(curr.ip);
+                }; 
+                return acc;
+            }, { succeededHosts: [], failedHosts: []});
+            result.overallResult = result.failedHosts.length > 0 ? 'NOK' : 'OK';
+            res.json(result);
+        })
+        .catch(function (err) {
+            console.log("Er: " + err);
+            res.status(401);
+        });
 });
 
 module.exports = router;
