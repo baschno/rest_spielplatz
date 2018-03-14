@@ -45,3 +45,4 @@ cqlsh> select * from mykeyspace.mytable;
 
 [1] - Cassandra on Docker and Python https://mannekentech.com/2017/11/11/playing-with-docker-and-cassandra/
 [2] - https://www.toptal.com/bottle/building-a-rest-api-with-bottle-framework
+[3] - https://yurisubach.com/2016/03/24/cassandra-docker-test-cluster/
