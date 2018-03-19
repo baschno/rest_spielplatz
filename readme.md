@@ -2,8 +2,24 @@
 
 ## Requirements
 
-Have a workingn Docker & Python setup.
+Have a working Docker setup to spawn a Docker-Cassandra-Cluster for read/write access of the REST apps.
+Keysapce & Table needs to be created manually as documented below.
 
+### NodeJS
+Install dependencies & modules:
+
+```
+cd node
+npm i
+```
+
+Run app:
+```
+node server.js
+```
+
+
+### Python
 Create a Python virtualenv and activate it:
 ```
 virtualenv venv
@@ -15,7 +31,7 @@ Install Python dependencies:
 pip install -r requirements.txt
 ```
 
-
+### Cassandra
 Run Cassandra [1]:
 ```
 ./docker-compose up -d
